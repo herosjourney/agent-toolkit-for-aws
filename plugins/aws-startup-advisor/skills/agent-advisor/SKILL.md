@@ -43,7 +43,7 @@ This skill is driven by the interpreter loop in `INTERPRETER.md` (§ The interpr
 it reads `.phase-status.json`, determines the current phase, runs each phase's
 `_preconditions` / fragments / `_assemble` / `_postconditions`, advances on `HANDOFF_OK`
 via `_advances_to`, and validates state. The backbone (intake → discover → clarify →
-confirm → design → estimate → generate → migration-plan → poc → complete) and the
+model-recommend → confirm → design → estimate → generate → migration-plan → poc → complete) and the
 one sidebar branch (add-capabilities) are derived
 from the phase files' frontmatter — they are not restated here.
 
@@ -81,12 +81,12 @@ this file (`INTERPRETER.md` § Skill bindings, § Backbone vs sidebar).
 
 **Entry-point routing:**
 
-- `build_scratch` → skip Discover; Clarify → Confirm → Design → Estimate → Generate → **Gate 2 → POC (any winning runtime)**. No migration plan (nothing existing to migrate).
-- `build_deploy` → Discover (if code) → Clarify → Confirm → Design → Estimate → Generate → **Gate 1 → Migration Plan (if existing non-AWS AI workload detected and user confirms)** → **Gate 2 → POC (any winning runtime)**.
-- `migrate` → Discover (if code) → Clarify → Confirm → Design → Estimate (target-state run cost; migration TCO comparison stays with the Migration Plan engine) → Generate → **Gate 1 → Migration Plan (in-skill, reusing the sibling `gcp-to-aws` skill)** → **Gate 2 → POC (any winning runtime, when the plan was produced)**. Declining Gate 1 keeps the classic handoff: pointer to `/aws-startup-advisor:llm-to-bedrock` with `handoff-summary.md`.
+- `build_scratch` → skip Discover; Clarify → Model Recommend → Confirm → Design → Estimate → Generate → **Gate 2 → POC (any winning runtime)**. No migration plan (nothing existing to migrate).
+- `build_deploy` → Discover (if code) → Clarify → Model Recommend → Confirm → Design → Estimate → Generate → **Gate 1 → Migration Plan (if existing non-AWS AI workload detected and user confirms)** → **Gate 2 → POC (any winning runtime)**.
+- `migrate` → Discover (if code) → Clarify → Model Recommend → Confirm → Design → Estimate (target-state run cost; migration TCO comparison stays with the Migration Plan engine) → Generate → **Gate 1 → Migration Plan (in-skill, reusing the sibling `gcp-to-aws` skill)** → **Gate 2 → POC (any winning runtime, when the plan was produced)**. Declining Gate 1 keeps the classic handoff: pointer to `/aws-startup-advisor:llm-to-bedrock` with `handoff-summary.md`.
 - `add_capabilities` → load `references/phases/add-capabilities/add-capabilities.md` and follow it (no runtime
   scoring; writes `capabilities-recommendation.md`). This is a self-contained branch — it does
-  NOT pass through Clarify / Confirm / Design / Estimate / Generate, so the phase gate
+  NOT pass through Clarify / Model Recommend / Confirm / Design / Estimate / Generate, so the phase gate
   below never applies to it.
 - Temporal detection routes into `migrate` with temporal units pre-seeded (see discover).
 
@@ -134,6 +134,7 @@ refuse briefly and run it.
     "intake": "completed",
     "discover": "skipped",
     "clarify": "in_progress",
+    "model-recommend": "pending",
     "confirm": "pending",
     "design": "pending",
     "estimate": "pending",
@@ -166,6 +167,8 @@ Stage 3 reads gcp-to-aws artifacts ONLY via this recorded path, never by re-glob
 | `references/phases/clarify/clarify.md`               | Clarify orchestrator + answer mapping to scoring keys                                                          |
 | `references/phases/clarify/clarify-technical.md`     | Technical-background question wording                                                                          |
 | `references/phases/clarify/clarify-business.md`      | Business-background question wording                                                                           |
+| `references/phases/model-recommend/model-recommend.md`| Bedrock model and API path per workload (runs `scripts/model_recommendation.py`)                               |
+| `references/phases/model-recommend/model-recommend-assemble.md`| Model Recommend assembler: the per-workload model/path contract                                                |
 | `references/phases/confirm/confirm.md`               | Winner-specific follow-ups                                                                                     |
 | `references/phases/design/design.md`                 | Assemble recommendation; Migrate handoff branch                                                                |
 | `references/phases/estimate/estimate.md`             | Coarse cost magnitude                                                                                          |
@@ -177,6 +180,7 @@ Stage 3 reads gcp-to-aws artifacts ONLY via this recorded path, never by re-glob
 | `references/decision-refs/workload-classes.md`       | Deterministic verdicts for non-agent workload units (batch/service/io)                                         |
 | `references/runtimes/*.json`                         | Runtime registry (read by scoring.py)                                                                          |
 | `scripts/scoring.py`                                 | Deterministic scoring engine                                                                                   |
+| `scripts/model_recommendation.py`                    | Bedrock model/path recommendation orchestrator (dispatches to the provider modules)                            |
 | `scripts/test_temporal_decision_refs.py`             | Content lock for the Temporal decision reference                                                               |
 | `scripts/test_poc_shapes.py`                         | Content lock for the POC deploy shapes                                                                         |
 | `scripts/test_workload_classes.py`                   | Content lock for workload-classes.md (verdicts table)                                                          |
