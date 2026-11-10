@@ -491,11 +491,42 @@ def _impact_features(rec):
     return {a["feature"] for a in rec["architecture_impacts"]}
 
 
-def test_hosted_web_search_not_reported_as_live_native_search():
+def test_hosted_web_search_reported_as_bedrock_web_search_on_mantle():
     rec = _recommend(_workload(detected_features=["web_search"]))
-    impacts = {a["feature"]: a["impact"] for a in rec["architecture_impacts"]}
-    assert "web_search" in impacts
-    assert "passthrough" in impacts["web_search"].lower()
+    entries = {a["feature"]: a for a in rec["architecture_impacts"]}
+    assert "web_search" in entries
+    impact = entries["web_search"]["impact"]
+    lowered = impact.lower()
+    assert "passthrough" not in lowered
+    assert "does not execute" not in lowered
+    for term in (
+        "Bedrock Web Search",
+        "bedrock-mantle",
+        "Responses API",
+        "GPT-5.4 and later",
+        "us-east-1",
+        "us-east-2",
+        "us-west-2",
+        "bedrock-websearch:InvokeSearch",
+        "bedrock-websearch:InvokeFetch",
+        "bedrock-websearch:ExternalWebAccess",
+    ):
+        assert term in impact, term
+
+
+def test_hosted_web_search_keeps_fallback_outside_mantle_responses():
+    rec = _recommend(_workload(detected_features=["web_search"]))
+    entries = {a["feature"]: a for a in rec["architecture_impacts"]}
+    recommendation = entries["web_search"]["recommendation"]
+    for term in (
+        "bedrock-runtime",
+        "Converse",
+        "InvokeModel",
+        "unsupported model or Region",
+        "client-side tool loop",
+        "Bedrock AgentCore Gateway",
+    ):
+        assert term in recommendation, term
 
 
 def test_file_search_and_vector_stores_produce_retrieval_impacts():

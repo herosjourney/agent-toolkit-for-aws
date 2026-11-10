@@ -79,10 +79,17 @@ def _delta(code, category, description):
 # --- Feature vocabulary (provider-scoped; codes match scanner feature-catalog) ---
 _HOSTED_TOOL_IMPACTS = {
     "web_search": (
-        "Hosted web search does not execute live on Bedrock Mantle (verified passthrough: "
-        "no query issued, no citations).",
-        "Implement a client-side tool loop, or expose a server-side tool (MCP/Lambda) through "
-        "Bedrock AgentCore Gateway; use Knowledge Bases for document retrieval.",
+        "Hosted web search runs server-side as Amazon Bedrock Web Search on the "
+        "bedrock-mantle endpoint with the Responses API, for OpenAI GPT-5.4 and later "
+        "models in us-east-1, us-east-2 and us-west-2, and returns url_citation "
+        "annotations. The calling identity needs bedrock-websearch:InvokeSearch and "
+        "bedrock-websearch:InvokeFetch; live-web Fetch also needs "
+        "bedrock-websearch:ExternalWebAccess (otherwise set external_web_access to false).",
+        "Keep the web_search tool on bedrock-mantle Responses with a supported model and "
+        "Region. Calls on bedrock-runtime, Converse or InvokeModel, or with an unsupported "
+        "model or Region, have no hosted web search: implement a client-side tool loop, or "
+        "expose a server-side tool (MCP/Lambda) through Bedrock AgentCore Gateway; use "
+        "Knowledge Bases for document retrieval.",
     ),
     "file_search_retrieval": (
         "Hosted file search / retrieval is not a drop-in on Bedrock.",
