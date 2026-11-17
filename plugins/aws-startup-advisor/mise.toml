@@ -52,14 +52,17 @@ run = "uv run --no-project --python 3.12 --with pytest --with 'jsonschema==4.23.
 [tasks."test:agent-advisor"]
 description = "Run agent-advisor engine tests (its own uv project, with jsonschema)"
 run = "uv run --directory skills/agent-advisor/scripts python -m pytest -q"
+env = { UV_PROJECT_ENVIRONMENT = "{{env.HOME}}/.cache/aws-startup-advisor/uv/agent-advisor" }
 
 [tasks."test:llm-to-bedrock"]
 description = "Run llm-to-bedrock script tests (its own uv project)"
 run = "uv run --directory skills/llm-to-bedrock/scripts python -m pytest -q"
+env = { UV_PROJECT_ENVIRONMENT = "{{env.HOME}}/.cache/aws-startup-advisor/uv/llm-to-bedrock" }
 
 [tasks."test:render-to-aws"]
 description = "Run render-to-aws script tests (its own uv project, with jsonschema and PyYAML)"
 run = "uv run --directory skills/render-to-aws/scripts python -m pytest -q"
+env = { UV_PROJECT_ENVIRONMENT = "{{env.HOME}}/.cache/aws-startup-advisor/uv/render-to-aws" }
 [tasks."test:skill-scripts"]
 description = "Run stdlib-only skill script tests (heroku-to-aws, tf-best-practices)"
 run = "uv run --no-project --python 3.12 --with pytest python -m pytest -q --import-mode=importlib skills/heroku-to-aws/scripts skills/tf-best-practices/scripts"
